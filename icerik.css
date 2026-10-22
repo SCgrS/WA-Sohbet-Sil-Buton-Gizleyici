@@ -1,0 +1,62 @@
+/*
+ * WA Sohbet Sil Buton Gizleyici: web.whatsapp.com'a eklenen stil kuralları.
+ *
+ * Bu dosya araclar/stil-uret.mjs ile üretilir. Elle değiştirmeyin: Seçenek listeleri o dosyadadır, listeleri değiştirince
+ * "npm run stil" çalıştırın.
+ *
+ * Eklentide çalışan kod yoktur. Chrome bu dosyayı WhatsApp Web açılırken sayfaya ekler ve kuralları kendi çizim motoruyla
+ * uygular. Dosyada yalnızca seçenekleri gizleyen kurallar vardır: Bir şey yükleyen ya da sayfadaki bir yazıyı ekrana
+ * getiren kural bulunmaz.
+ *
+ * Kurallar yalnızca sohbet alanında sağ tıkla açılan sohbet menüsünde gizler:
+ *   - Sohbet menüsü: İçinde SOHBET_MENUSU_SECENEKLERI'nden biri bulunan menü.
+ *   - Sağ tıkla açılan: Aynı sohbet menüsü sohbetin üstündeki üç nokta düğmesiyle de açılır. O düğme, menüsü açıkken
+ *     aria-expanded="true" taşır. Bu durumda kurallar uygulanmaz, seçenekler üç nokta menüsünde görünür kalır.
+ *
+ * WhatsApp Web'in yapısı (2026-10'da ölçüldü): Menüler sonradan eklenen div[role="menu"] öğeleridir ve hepsi aynı ortak
+ * katmanda açılır. Seçenekler button[role="menuitem"] öğeleridir ve aria-label değerleri görünen yazıyla aynıdır. Ayırıcı
+ * çizgiler, seçeneklerle aynı kapta duran rolsüz ve boş div'lerdir. Açık sohbetin üst çubuğu #main içindeki header'dır,
+ * üç nokta düğmesi aria-haspopup taşır. Sınıf adları rastgele olduğu için kullanılmaz.
+ *
+ * Yazım, WhatsApp sayfası değiştikçe Chrome'a fazladan iş çıkarmayacak biçimde seçildi:
+ *   - Üç nokta düğmesinin durumu kökte (:root) kalıtılmayan tek bir değişkene yazılır, menü kuralları ona kökün kabı
+ *     üzerinden bakar. Sayfaya mesaj ya da sohbet eklenip çıktıkça Chrome yalnızca kökü yeniden hesaplar, bütün sayfayı değil.
+ *   - Ayırıcı kuralları önce çizginin bir menünün içinde olduğuna bakar. Menü dışındaki boş div'lerin komşularına bakılmaz.
+ *   - Kurallar kendi katmanlarındadır (@layer). Chrome eklentinin kurallarını sayfanınkilerden önce sıraladığı için
+ *     sayfanın stil dosyalarındaki !important kuralları gizlemeyi bozamaz.
+ *
+ * Bilinen sınır: Kökteki kap adı ve değişken olağan önceliktedir, böylece sayfanın kendi kök kurallarını bozmaz. WhatsApp
+ * köke kendi kap adını (container-name) verirse kurallar kökün kabını bulamaz, gizleme kalkar ve seçenekler görünür. Sayfa
+ * bozulmaz.
+ */
+
+@property --wa-sohbet-sil-buton-gizleyici-uc-nokta { syntax: '*'; inherits: false; }
+
+@layer wa-sohbet-sil-buton-gizleyici {
+  /* Kök, menü kurallarının baktığı kaptır. Üç nokta menüsü açıkken kökün değişkeni 1 olur. */
+  :root { container-name: wa-sohbet-sil-buton-gizleyici; }
+  :root:has(#main header [aria-haspopup][aria-expanded="true"]) { --wa-sohbet-sil-buton-gizleyici-uc-nokta: 1; }
+
+  @container wa-sohbet-sil-buton-gizleyici not style(--wa-sohbet-sil-buton-gizleyici-uc-nokta: 1) {
+    /* Sohbet menüsündeki gizlenecek seçenekler. */
+    [role="menu"]:has([role="menuitem"]:is([aria-label="Mesaj seç"], [aria-label="Sohbeti kapat"], [aria-label="Select messages"], [aria-label="Close chat"])) [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) { display: none !important; }
+
+    /*
+     * Gizlenen seçeneklerin yanında boşta kalan ayırıcı çizgiler:
+     *   - Sondaki: Arkasında yalnızca gizlenen seçenekler ve çizgiler kalan çizgi.
+     *   - Baştaki: Önünde yalnızca gizlenen seçenekler olan çizgi.
+     *   - Art arda: İki çizgi arasında yalnızca gizlenen seçenekler kalırsa ikinci çizgi.
+     * Baştaki ve art arda çizgi kuralları, yan yana 1, 2, … gizlenen seçenek için ayrı ayrı yazılır. Listedeki bütün
+     * yazılar yan yana gelse bile kapsanır. Gizlenen seçenek yoksa çizgilere dokunulmaz.
+     */
+    [role="menu"]:has([role="menuitem"]:is([aria-label="Mesaj seç"], [aria-label="Sohbeti kapat"], [aria-label="Select messages"], [aria-label="Close chat"])) [role="menuitem"] ~ div:not([role]):empty:is([role="menu"] *):has(~ [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"])):not(:has(~ :not([role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]), div:not([role]):empty))) { display: none !important; }
+    [role="menu"]:has([role="menuitem"]:is([aria-label="Mesaj seç"], [aria-label="Sohbeti kapat"], [aria-label="Select messages"], [aria-label="Close chat"])) [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]):first-child + div:not([role]):empty:is([role="menu"] *) { display: none !important; }
+    [role="menu"]:has([role="menuitem"]:is([aria-label="Mesaj seç"], [aria-label="Sohbeti kapat"], [aria-label="Select messages"], [aria-label="Close chat"])) [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]):first-child + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + div:not([role]):empty:is([role="menu"] *) { display: none !important; }
+    [role="menu"]:has([role="menuitem"]:is([aria-label="Mesaj seç"], [aria-label="Sohbeti kapat"], [aria-label="Select messages"], [aria-label="Close chat"])) [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]):first-child + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + div:not([role]):empty:is([role="menu"] *) { display: none !important; }
+    [role="menu"]:has([role="menuitem"]:is([aria-label="Mesaj seç"], [aria-label="Sohbeti kapat"], [aria-label="Select messages"], [aria-label="Close chat"])) [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]):first-child + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + div:not([role]):empty:is([role="menu"] *) { display: none !important; }
+    [role="menu"]:has([role="menuitem"]:is([aria-label="Mesaj seç"], [aria-label="Sohbeti kapat"], [aria-label="Select messages"], [aria-label="Close chat"])) div:not([role]):empty + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + div:not([role]):empty:is([role="menu"] *) { display: none !important; }
+    [role="menu"]:has([role="menuitem"]:is([aria-label="Mesaj seç"], [aria-label="Sohbeti kapat"], [aria-label="Select messages"], [aria-label="Close chat"])) div:not([role]):empty + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + div:not([role]):empty:is([role="menu"] *) { display: none !important; }
+    [role="menu"]:has([role="menuitem"]:is([aria-label="Mesaj seç"], [aria-label="Sohbeti kapat"], [aria-label="Select messages"], [aria-label="Close chat"])) div:not([role]):empty + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + div:not([role]):empty:is([role="menu"] *) { display: none !important; }
+    [role="menu"]:has([role="menuitem"]:is([aria-label="Mesaj seç"], [aria-label="Sohbeti kapat"], [aria-label="Select messages"], [aria-label="Close chat"])) div:not([role]):empty + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + [role="menuitem"]:is([aria-label="Sohbeti sil"], [aria-label="Sohbeti temizle"], [aria-label="Delete chat"], [aria-label="Clear chat"]) + div:not([role]):empty:is([role="menu"] *) { display: none !important; }
+  }
+}

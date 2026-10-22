@@ -1,0 +1,4 @@
+cikti/
+node_modules/
+*.pem
+*.crx

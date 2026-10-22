@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Sahte WhatsApp (sınama)</title>
+<!--
+  Eklentinin sınaması için WhatsApp Web'in menü yapısını taklit eden sayfa. Yapı 2026-10'da gerçek sayfada ölçüldü:
+  menüler #app altındaki ortak bir katmana (portal) sonradan eklenen div[role=menu]; seçenekler aynı kaptaki
+  button[role=menuitem] (aria-label = görünen yazı); ayırıcılar rolsüz, çocuksuz, 1 px'lik div. Sınama bu sayfayı
+  https://web.whatsapp.com/ adresinde sunar (gerçek siteye gidilmez).
+-->
+<style>
+  body { margin: 0; font: 14px/1.4 system-ui, sans-serif; background: #111b21; color: #e9edef; }
+  .kok { display: flex; height: 100vh; }
+  #side { width: 380px; border-right: 1px solid #333; }
+  #side > header, #main > header { height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: #202c33; }
+  #pane-side [role=row] { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #222; }
+  #main { flex: 1; display: flex; flex-direction: column; }
+  .mesajlar { flex: 1; padding: 24px; }
+  .mesajlar [role=row] { margin: 8px 0; }
+  .balon { display: inline-flex; gap: 12px; padding: 8px 12px; border-radius: 8px; background: #005c4b; }
+  button { font: inherit; color: inherit; background: #2a3942; border: 0; padding: 6px 10px; cursor: pointer; }
+  .menu-kutu { position: absolute; z-index: 900; min-width: 220px; background: #233138; border-radius: 12px; padding: 8px 0; box-shadow: 0 4px 16px #0008; }
+  .kap { display: flex; flex-direction: column; }
+  .kap button[role=menuitem] { display: block; text-align: left; height: 36px; padding: 0 16px; background: none; }
+  .kap button[role=menuitem] > div { display: flex; align-items: center; gap: 12px; }
+  .kap svg { width: 18px; height: 18px; fill: currentColor; }
+  .ayirici { height: 1px; background: #3b4a54; margin: 4px 0; }
+  .tepki { position: absolute; z-index: 900; display: flex; gap: 4px; background: #233138; border-radius: 20px; padding: 4px; }
+</style>
+</head>
+<body>
+<div id="app"><div class="kok">
+  <div id="side">
+    <header><span>Sohbetler</span><button aria-label="Menü" aria-haspopup="menu" aria-expanded="false" id="yan-menu">⋮</button></header>
+    <div id="pane-side">
+      <div role="grid" aria-label="Sohbet listesi">
+        <div role="row" data-testid="list-item-0" data-tur="kisi"><div role="gridcell">Kişi sohbeti</div><span><button data-testid="context-btn" aria-label="Seçenekler">▾</button></span></div>
+        <div role="row" data-testid="list-item-1" data-tur="grup"><div role="gridcell">Grup sohbeti</div><span><button data-testid="context-btn" aria-label="Seçenekler">▾</button></span></div>
+        <div role="row" data-testid="list-item-2" data-tur="cikilmis"><div role="gridcell">Çıkılmış grup</div><span><button data-testid="context-btn" aria-label="Seçenekler">▾</button></span></div>
+      </div>
+    </div>
+  </div>
+  <div id="main" data-testid="conversation-panel-wrapper">
+    <header data-testid="conversation-header">
+      <div role="button" data-testid="conversation-info-header">Sohbet başlığı</div>
+      <span><button aria-label="Ara">🔍</button> <button aria-label="Menü" aria-haspopup="menu" aria-expanded="false" id="sohbet-menu">⋮</button></span>
+    </header>
+    <div class="mesajlar" role="application">
+      <div role="row"><div data-id="m1" class="balon"><span>Mesaj</span><div role="button" aria-label="Mesaj seçeneklerini aç" data-testid="icon-down-context">▾</div></div></div>
+    </div>
+    <footer><div contenteditable="true" role="textbox" aria-label="Bir mesaj yazın" style="padding:12px;background:#2a3942">.</div></footer>
+  </div>
+</div><div id="katman"></div></div>
+<script>
+'use strict';
+const DIL = new URLSearchParams(location.search).get('dil') === 'en' ? 'en' : 'tr';
+document.documentElement.lang = DIL;
+const L = {
+  tr: {
+    sohbetKisi: ['Kişi bilgisi', 'Ara', 'Mesaj seç', 'Bildirimleri sessize al', 'Süreli mesajlar', "Favoriler'e ekle", 'Listeye ekle', 'Sohbeti kapat', '|', 'Arama bağlantısı gönder', 'Yeni grup araması', '|', 'Şikayet et', 'Engelle', 'Sohbeti temizle', 'Sohbeti sil'],
+    sohbetGrup: ['Üye ekle', 'Grup bilgisi', 'Ara', 'Mesaj seç', 'Bildirimleri sessize al', 'Süreli mesajlar', "Favoriler'e ekle", 'Listeye ekle', 'Sohbeti kapat', '|', 'Sohbeti temizle', 'Gruptan çık'],
+    listeKisi: ['Sohbeti arşivle', 'Bildirimleri sessize al', 'Sohbeti sabitle', 'Okunmadı olarak işaretle', "Favoriler'e ekle", 'Listeye ekle', '|', 'Engelle', 'Sohbeti temizle', 'Sohbeti sil'],
+    listeGrup: ['Sohbeti arşivle', 'Bildirimleri sessize al', 'Sohbetin Sabitlemesini Kaldır', 'Okunmadı olarak işaretle', "Favoriler'e ekle", 'Listeye ekle', '|', 'Sohbeti temizle', 'Gruptan çık'],
+    // Çıkılmış grup: 2026-10-19'da gerçek sayfada ölçüldü; "Gruptan çık"ın yerinde "Grubu sil" çıkıyor.
+    sohbetCikilmis: ['Grup bilgisi', 'Ara', 'Mesaj seç', "Favoriler'e ekle", 'Listeye ekle', 'Sohbeti kapat', '|', 'Sohbeti temizle', 'Grubu sil'],
+    listeCikilmis: ['Sohbeti arşivle', 'Sohbeti sabitle', 'Okunmadı olarak işaretle', "Favoriler'e ekle", 'Listeye ekle', '|', 'Sohbeti temizle', 'Grubu sil'],
+    mesaj: ['Mesaj bilgisi', 'Cevapla', 'Kopyala', 'İfade bırak', 'İndir', 'İlet', 'Sabitle', "Meta AI'a soru sorun", 'Yıldız ekle', '|', 'Sil'],
+    yan: ['Yeni grup', 'Yıldızlı mesajlar', 'Sohbetleri seç', 'Tümünü okundu olarak işaretle', '|', 'Çıkış yap']
+  },
+  en: {
+    sohbetKisi: ['Contact info', 'Search', 'Select messages', 'Mute notifications', 'Disappearing messages', 'Add to favourites', 'Add to list', 'Close chat', '|', 'Send call link', 'New group call', '|', 'Report', 'Block', 'Clear chat', 'Delete chat'],
+    sohbetGrup: ['Add members', 'Group info', 'Search', 'Select messages', 'Mute notifications', 'Disappearing messages', 'Add to favourites', 'Add to list', 'Close chat', '|', 'Clear chat', 'Exit group'],
+    listeKisi: ['Archive chat', 'Mute notifications', 'Pin chat', 'Mark as unread', 'Add to favourites', 'Add to list', '|', 'Block', 'Clear chat', 'Delete chat'],
+    listeGrup: ['Archive chat', 'Mute notifications', 'Unpin chat', 'Mark as unread', 'Add to favourites', 'Add to list', '|', 'Clear chat', 'Exit group'],
+    sohbetCikilmis: ['Group info', 'Search', 'Select messages', 'Add to favourites', 'Add to list', 'Close chat', '|', 'Clear chat', 'Delete group'],
+    listeCikilmis: ['Archive chat', 'Pin chat', 'Mark as unread', 'Add to favourites', 'Add to list', '|', 'Clear chat', 'Delete group'],
+    mesaj: ['Message info', 'Reply', 'Copy', 'React', 'Download', 'Forward', 'Pin', 'Ask Meta AI', 'Star', '|', 'Delete'],
+    yan: ['New group', 'Starred messages', 'Select chats', 'Mark all as read', '|', 'Log out']
+  }
+}[DIL];
+
+// Sınamanın değiştirebildiği ayarlar. "tek seferlik" olanlar bir sonraki menüde kullanılıp sıfırlanır.
+window.sahte = {
+  sohbetTuru: 'kisi',
+  gecikme: 30,           // menünün tıklamadan kaç ms sonra ekleneceği (WhatsApp'ta ~50 ms ölçüldü)
+  ozelMenu: null,        // tek seferlik: sohbet içi menünün seçenek listesi
+  ekOgeler: null,        // tek seferlik: sohbet içi menünün sonuna eklenecek seçenekler
+  gecikmeliEtiket: false, // tek seferlik: gizlenecek seçeneklerin aria-label'ı 60 ms sonra gelir
+  etiketsiz: false,       // tek seferlik: gizlenecek seçeneklerin aria-label'ı hiç yoktur (yalnızca görünen yazı)
+  sonradanOge: null,     // tek seferlik: menü açıldıktan 80 ms sonra kaba eklenecek seçenek
+  acilanlar: 0
+};
+
+function teklik(ad, varsayilan) { const d = window.sahte[ad]; window.sahte[ad] = varsayilan; return d; }
+
+function ogeYap(yazi, { etiket = 'hemen' } = {}) {
+  const b = document.createElement('button');
+  b.setAttribute('role', 'menuitem');
+  if (etiket === 'hemen') b.setAttribute('aria-label', yazi.trim());
+  else if (etiket === 'gecikmeli') setTimeout(() => b.setAttribute('aria-label', yazi.trim()), 60);
+  b.tabIndex = -1;
+  b.className = 'x1 x2';
+  const ic = document.createElement('div');
+  const simge = document.createElement('div');
+  simge.innerHTML = '<span><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/></svg></span>';
+  const yaziKutusu = document.createElement('div');
+  const span = document.createElement('span');
+  span.textContent = yazi;
+  yaziKutusu.appendChild(span);
+  ic.append(simge, yaziKutusu);
+  b.appendChild(ic);
+  return b;
+}
+
+function ayiriciYap() { const d = document.createElement('div'); d.className = 'ayirici'; return d; }
+
+const HEDEF_YAZILAR = ['Sohbeti sil', 'Sohbeti temizle', 'Delete chat', 'Clear chat'];
+
+function menuYap(liste, secenekler = {}) {
+  const kutu = document.createElement('div');
+  kutu.className = 'menu-kutu';
+  const menu = document.createElement('div');
+  menu.setAttribute('role', 'menu');
+  menu.tabIndex = -1;
+  const d1 = document.createElement('div');
+  const d2 = document.createElement('div');
+  const kap = document.createElement('div');
+  kap.className = 'kap';
+  for (const yazi of liste) {
+    if (yazi === '|') { kap.appendChild(ayiriciYap()); continue; }
+    const hedef = HEDEF_YAZILAR.includes(yazi.trim());
+    const etiket = hedef && secenekler.gecikmeliEtiket ? 'gecikmeli' : hedef && secenekler.etiketsiz ? 'yok' : 'hemen';
+    kap.appendChild(ogeYap(yazi, { etiket }));
+  }
+  const ilk = kap.querySelector('[role=menuitem]');
+  if (ilk) ilk.tabIndex = 0;
+  d2.appendChild(kap); d1.appendChild(d2); menu.appendChild(d1); kutu.appendChild(menu);
+  return kutu;
+}
+
+let acikDugme = null;
+function menuleriKapat() {
+  for (const k of document.querySelectorAll('#katman > *')) k.remove();
+  if (acikDugme) { acikDugme.setAttribute('aria-expanded', 'false'); acikDugme = null; }
+}
+
+function menuAc(liste, x, y, { dugme = null, tepki = false, secenekler = {} } = {}) {
+  menuleriKapat();
+  if (dugme) { dugme.setAttribute('aria-expanded', 'true'); acikDugme = dugme; }
+  const sonradan = teklik('sonradanOge', null);
+  setTimeout(() => {
+    const katman = document.getElementById('katman');
+    if (tepki) {
+      const t = document.createElement('div');
+      t.setAttribute('role', 'dialog');
+      t.innerHTML = '<div role="menu" class="tepki"><button>👍</button><button>❤️</button><button aria-label="Mesaja ifade bırak">+</button></div>';
+      t.firstElementChild.style.left = x + 'px'; t.firstElementChild.style.top = (y - 50) + 'px';
+      katman.appendChild(t);
+    }
+    const kutu = menuYap(liste, secenekler);
+    kutu.style.left = x + 'px'; kutu.style.top = y + 'px';
+    katman.appendChild(kutu);
+    window.sahte.acilanlar++;
+    const ilk = kutu.querySelector('[role=menuitem][tabindex="0"]');
+    if (ilk) ilk.focus();
+    if (sonradan) setTimeout(() => kutu.querySelector('.kap').appendChild(ogeYap(sonradan)), 80);
+  }, window.sahte.gecikme);
+}
+
+function sohbetMenusuListesi() {
+  const turler = { kisi: L.sohbetKisi, grup: L.sohbetGrup, cikilmis: L.sohbetCikilmis };
+  let liste = teklik('ozelMenu', null) || turler[window.sahte.sohbetTuru] || L.sohbetKisi;
+  const ek = teklik('ekOgeler', null);
+  if (ek) liste = [...liste, '|', ...ek];
+  return liste;
+}
+
+function tekSeferlikSecenekler() {
+  return { gecikmeliEtiket: teklik('gecikmeliEtiket', false), etiketsiz: teklik('etiketsiz', false) };
+}
+
+document.getElementById('sohbet-menu').addEventListener('click', e => {
+  const r = e.currentTarget.getBoundingClientRect();
+  if (e.currentTarget.getAttribute('aria-expanded') === 'true') { menuleriKapat(); return; }
+  menuAc(sohbetMenusuListesi(), r.right - 230, r.bottom + 4, { dugme: e.currentTarget, secenekler: tekSeferlikSecenekler() });
+});
+document.getElementById('yan-menu').addEventListener('click', e => {
+  const r = e.currentTarget.getBoundingClientRect();
+  menuAc(L.yan, r.left, r.bottom + 4, { dugme: e.currentTarget });
+});
+for (const satir of document.querySelectorAll('#pane-side [role=row]')) {
+  const liste = () => ({ kisi: L.listeKisi, grup: L.listeGrup, cikilmis: L.listeCikilmis })[satir.dataset.tur];
+  satir.addEventListener('contextmenu', e => { e.preventDefault(); menuAc(liste(), e.clientX, e.clientY, { secenekler: tekSeferlikSecenekler() }); });
+  satir.querySelector('[data-testid=context-btn]').addEventListener('click', e => {
+    e.stopPropagation();
+    const r = e.currentTarget.getBoundingClientRect();
+    menuAc(liste(), r.left, r.bottom + 4, { secenekler: tekSeferlikSecenekler() });
+  });
+}
+// Gerçek sayfada (2026-10-19) mesaj balonuna sağ tıklayınca mesaj menüsü, sohbet alanında boş bir yere ya da bir mesajın
+// satırına (balonun dışına) sağ tıklayınca sohbet menüsü farenin olduğu yerde açılıyor; olay #main içinden geliyor.
+document.querySelector('.mesajlar').addEventListener('contextmenu', e => {
+  e.preventDefault();
+  if (e.target.closest('.balon')) { menuAc(L.mesaj, e.clientX, e.clientY, { tepki: true }); return; }
+  menuAc(sohbetMenusuListesi(), e.clientX, e.clientY, { secenekler: tekSeferlikSecenekler() });
+});
+document.querySelector('[data-testid=icon-down-context]').addEventListener('click', e => {
+  const r = e.currentTarget.getBoundingClientRect();
+  menuAc(L.mesaj, r.left, r.bottom + 4, { tepki: true });
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') menuleriKapat(); });
+document.addEventListener('mousedown', e => {
+  if (!e.target.closest('#katman') && !e.target.closest('[aria-haspopup], [data-testid=context-btn], [data-testid=icon-down-context]')) menuleriKapat();
+}, true);
+</script>
+</body>
+</html>

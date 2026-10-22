@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "WA Sohbet Sil Buton Gizleyici",
+  "short_name": "WA Sohbet Sil Gizleyici",
+  "version": "0.1.0",
+  "description": "WhatsApp Web'de sohbet alanında sağ tıkla açılan menüden “Sohbeti sil” ve “Sohbeti temizle”yi gizler. Geliştirici: x.com/CgrShn",
+  "author": "x.com/CgrShn",
+  "homepage_url": "https://x.com/CgrShn",
+  "minimum_chrome_version": "111",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuQM4+vvAvxVFClvGhNuTH8LBATM6X9trGF7kxLZsBVt1o0BNoNxjW0NyBAmsrxRIyTLJuqBP50Si9wIjq54mOrAzuCU29ycQRs12yx2cAK/TqvZOTizfi7kJFZ2PGE8KiNHyWFrr2+1AG5R9RimbsuiIa5jhFUVtsTKiE7I1pSyq7nKIZACMY6ave9ZLFquiG7qOsAdagBbnEHpLoLYBAqc78uscYxdYW9LdmNaH/TyPqaHVaemXz5rLIKLUoJkkXPh+U+1UTQwMXuSGeC/LpDUMu+miEG6yVZCw/6dzQM9fRC/xMLuKRAMQpQwimMh0EP1OqujYwzKDCj29H/uPswIDAQAB",
+  "icons": {
+    "16": "simgeler/16.png",
+    "32": "simgeler/32.png",
+    "48": "simgeler/48.png",
+    "128": "simgeler/128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://web.whatsapp.com/*"
+      ],
+      "css": [
+        "icerik.css"
+      ]
+    }
+  ]
+}

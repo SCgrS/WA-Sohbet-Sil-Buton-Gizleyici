@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Tanıtım görünümü</title>
+<!--
+  README görselleri için temsilî WhatsApp Web görünümü (araclar/gorsel-uret.mjs kullanır). Adlar ve mesajlar uydurmadır.
+  Menüler gerçek sayfada ölçülen yapıyla ve seçenek sıralarıyla kurulur (div[role=menu] > … > button[role=menuitem]
+  [aria-label], 1 px ayırıcı); eklentinin kendisi bu sayfada çalışır, gizlemeyi gerçek eklenti yapar. Simgeler
+  WhatsApp'ınkiler değil, basit çizimlerdir. Sağ tıkla açılan menü, gerçek WhatsApp Web'deki gibi farenin olduğu yerden
+  aşağı açılır.
+-->
+<style>
+  /* Renkler WhatsApp Web'in yeni koyu temasına yakın (2026-10'daki görünüm): nötr gri zemin. */
+  :root { --zemin: #161717; --baslik: #1d1f1f; --gelen: #242626; --giden: #144d37; --yazi: #e9edef; --soluk: #8d9598;
+          --menu: #1d1f1f; --cizgi: #333535; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: transparent; font: 14.2px/1.4 "Segoe UI", system-ui, sans-serif; color: var(--yazi); }
+  #app { width: 520px; height: 800px; position: relative; overflow: hidden; border-radius: 14px; background: var(--zemin); }
+  #main { position: absolute; inset: 0; display: flex; flex-direction: column; }
+  header { height: 60px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 12px 0 16px; background: var(--baslik); }
+  .avatar { width: 40px; height: 40px; flex: none; border-radius: 50%; background: #6a7175; display: grid; place-items: center; font-weight: 600; color: #fff; }
+  .avatar svg { width: 24px; height: 24px; }
+  .ad { flex: 1; min-width: 0; } .ad b { display: block; font-weight: 500; } .ad small { color: var(--soluk); font-size: 13px; }
+  .dugme { width: 40px; height: 40px; flex: none; border-radius: 50%; display: grid; place-items: center; background: none; border: 0; color: var(--soluk); }
+  .dugme svg { width: 22px; height: 22px; }
+  .mesajlar { flex: 1; padding: 18px 22px; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; }
+  .mesajlar.ustten { justify-content: flex-start; }
+  .balon { max-width: 72%; padding: 6px 9px 8px; border-radius: 8px; box-shadow: 0 1px .5px #0b141a80; }
+  .balon small { color: #ffffff99; font-size: 11px; margin-left: 10px; float: right; margin-top: 6px; }
+  .gelen { align-self: flex-start; background: var(--gelen); }
+  .giden { align-self: flex-end; background: var(--giden); }
+  .tarih { align-self: center; background: #242626; color: var(--soluk); font-size: 12.5px; padding: 5px 12px; border-radius: 8px; margin: 6px 0; text-align: center; }
+  footer { height: 62px; flex: none; background: var(--baslik); display: flex; align-items: center; padding: 0 16px; }
+  footer div { flex: 1; height: 42px; border-radius: 22px; background: #242626; color: var(--soluk); display: flex; align-items: center; padding: 0 14px; }
+  #katman { position: absolute; inset: 0; pointer-events: none; }
+  .menu-kutu { position: absolute; width: 236px; background: var(--menu); border: 1px solid #333535; border-radius: 14px; padding: 7px 0; box-shadow: 0 2px 5px #0006, 0 8px 24px #0008; }
+  .kap { display: flex; flex-direction: column; }
+  .kap button { all: unset; display: flex; align-items: center; gap: 13px; height: 32px; padding: 0 16px; color: #f0f2f2; font-size: 14px; white-space: nowrap; }
+  .kap button svg { width: 18px; height: 18px; flex: none; color: #e9edef; }
+  .kap .ayirici { height: 1px; background: var(--cizgi); margin: 5px 14px; }
+  .isaret { position: absolute; border: 2.5px solid; border-radius: 10px; pointer-events: none; }
+  .imlec { position: absolute; width: 22px; height: 30px; pointer-events: none; filter: drop-shadow(0 1px 1px #0008); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+const S = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const SIMGE = {
+  bilgi: S('<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>'),
+  ara: S('<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/>'),
+  sec: S('<rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8 12 3 3 5-6"/>'),
+  sessiz: S('<path d="M6 16V11a6 6 0 0 1 9.5-4.9M18 11v5l1.5 2H8"/><path d="M10 20a2 2 0 0 0 4 0M3 3l18 18"/>'),
+  sure: S('<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 3h6"/>'),
+  favori: S('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'),
+  liste: S('<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 10h8M8 14h5"/>'),
+  kapat: S('<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/>'),
+  baglanti: S('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'),
+  grupArama: S('<circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M18 8v6M15 11h6"/>'),
+  sikayet: S('<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>'),
+  engelle: S('<circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/>'),
+  temizle: S('<circle cx="12" cy="12" r="9"/><path d="M8 12h8"/>'),
+  sil: S('<path d="M4 7h16M10 7V4h4v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/>'),
+  cevapla: S('<path d="M10 7 5 12l5 5M5 12h9a5 5 0 0 1 5 5v1"/>'),
+  kopyala: S('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>'),
+  ifade: S('<circle cx="12" cy="12" r="9"/><path d="M8.5 14a4 4 0 0 0 7 0M9 9.5v.5M15 9.5v.5"/>'),
+  ilet: S('<path d="m14 7 5 5-5 5M19 12h-9a5 5 0 0 0-5 5v1"/>'),
+  sabitle: S('<path d="M9 4h6l-1 6 3 3H7l3-3zM12 13v8"/>'),
+  ai: S('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/>'),
+  yildiz: S('<path d="m12 4 2.4 5 5.4.6-4 3.7 1.1 5.4L12 16l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z"/>'),
+  duzenle: S('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>')
+};
+const MENULER = {
+  // Sıralar gerçek sayfada (2026-10-19) ölçüldü; mesaj menüsü kendi gönderdiğimiz yazılı bir mesajınki.
+  mesaj: [['Mesaj bilgisi', 'bilgi'], ['Cevapla', 'cevapla'], ['Kopyala', 'kopyala'], ['İfade bırak', 'ifade'], ['İlet', 'ilet'], ['Sabitle', 'sabitle'],
+    ["Meta AI'a soru sorun", 'ai'], ['Yıldız ekle', 'yildiz'], ['Düzenle', 'duzenle'], '|', ['Sil', 'sil']],
+  sohbetKisi: [['Kişi bilgisi', 'bilgi'], ['Ara', 'ara'], ['Mesaj seç', 'sec'], ['Bildirimleri sessize al', 'sessiz'],
+    ['Süreli mesajlar', 'sure'], ["Favoriler'e ekle", 'favori'], ['Listeye ekle', 'liste'], ['Sohbeti kapat', 'kapat'], '|',
+    ['Arama bağlantısı gönder', 'baglanti'], ['Yeni grup araması', 'grupArama'], '|',
+    ['Şikayet et', 'sikayet'], ['Engelle', 'engelle'], ['Sohbeti temizle', 'temizle'], ['Sohbeti sil', 'sil']]
+};
+const KISI = { ad: 'Ayşe Demir', alt: 'çevrimiçi', avatar: 'A' };
+const app = document.getElementById('app');
+const katman = () => document.getElementById('katman');
+
+function sohbetCiz(kim, mesajlar, ustten) {
+  app.innerHTML = `<div id="main"><header><div class="avatar">${kim.avatar}</div><div class="ad"><b>${kim.ad}</b><small>${kim.alt}</small></div>
+    <button class="dugme" aria-label="Ara">${SIMGE.ara}</button>
+    <button class="dugme" id="menu-dugmesi" aria-label="Menü" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button></header>
+    <div class="mesajlar${ustten ? ' ustten' : ''}">${mesajlar}</div><footer><div>Bir mesaj yazın</div></footer></div><div id="katman"></div>`;
+}
+
+window.tanitim = {
+  kisiSohbeti() {
+    sohbetCiz(KISI, `<div class="tarih">Bugün</div>
+      <div class="balon gelen">Günaydın, dosyayı inceleyebildin mi?<small>09:12</small></div>
+      <div class="balon giden" id="hedef-mesaj">İnceledim, birkaç notum var. Öğleden sonra konuşalım mı?<small>09:15</small></div>
+      <div class="balon gelen">Olur, 14.00 uygun.<small>09:16</small></div>
+      <div class="balon giden">Tamam, görüşürüz.<small>09:17</small></div>`, true);
+  },
+  // Öğenin #app içindeki kutusu.
+  kutu(secici) {
+    const a = app.getBoundingClientRect(), r = document.querySelector(secici).getBoundingClientRect();
+    return { x: r.left - a.left, y: r.top - a.top, w: r.width, h: r.height };
+  },
+  // Menüyü (x, y) noktasında açar. yon 'yukari' ise alt kenarı y'de durur (ekranın altına yakın sağ tık).
+  menuAc(ad, x, y, yon = 'asagi') {
+    const kutu = document.createElement('div');
+    kutu.className = 'menu-kutu';
+    const kap = MENULER[ad].map(o => o === '|' ? '<div class="ayirici"></div>'
+      : `<button role="menuitem" tabindex="-1" aria-label="${o[0]}">${SIMGE[o[1]]}<span>${o[0]}</span></button>`).join('');
+    kutu.innerHTML = `<div role="menu"><div><div class="kap">${kap}</div></div></div>`;
+    // Sağda yer yoksa menü farenin soluna açılır.
+    const en = 236;
+    kutu.style.left = (x + en > app.clientWidth - 8 ? x - en : x) + 'px';
+    if (yon === 'yukari') kutu.style.bottom = (app.clientHeight - y) + 'px';
+    else kutu.style.top = y + 'px';
+    katman().appendChild(kutu);
+    return true;
+  },
+  imlec(x, y) {
+    const i = document.createElement('div');
+    i.className = 'imlec';
+    i.style.left = x + 'px'; i.style.top = y + 'px';
+    i.innerHTML = '<svg viewBox="0 0 22 30" width="22" height="30"><path d="M1.5 1.5v23l6-6 4 9 3.6-1.6-4-8.6h8.4z" fill="#fff" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+    katman().appendChild(i);
+    return true;
+  },
+  // Verilen seçeneklerin satırlarını tek bir çerçeveyle işaretler.
+  isaretle(etiketler, renk) {
+    const a = app.getBoundingClientRect();
+    const r = [...document.querySelectorAll('[role=menuitem]')].filter(b => etiketler.includes(b.getAttribute('aria-label')))
+      .map(b => b.getBoundingClientRect());
+    if (!r.length) return false;
+    const c = document.createElement('div');
+    c.className = 'isaret';
+    const ust = Math.min(...r.map(x => x.top)), alt = Math.max(...r.map(x => x.bottom));
+    Object.assign(c.style, { left: (r[0].left - a.left + 6) + 'px', top: (ust - a.top - 2) + 'px', width: (r[0].width - 12) + 'px',
+      height: (alt - ust + 4) + 'px', borderColor: renk });
+    katman().appendChild(c);
+    return true;
+  }
+};
+</script>
+</body>
+</html>

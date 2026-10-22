@@ -1,0 +1,27 @@
+name: Yayım
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  yayim:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Eylemler sürüm etiketiyle değil commit'iyle çağrılır. Depoya yazma yetkili belirteç diske yazılmaz, yalnızca son adımda
+      # sürümü yayımlarken kullanılır.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: npm test
+      - name: Etiket manifest sürümüyle aynı mı
+        run: node -e "const v=require('./manifest.json').version; if ('v'+v !== process.env.GITHUB_REF_NAME) { console.error('manifest '+v+' ile etiket '+process.env.GITHUB_REF_NAME+' tutmuyor'); process.exit(1); }"
+      - run: node araclar/paketle.mjs cikti/WA-Sohbet-Sil-Buton-Gizleyici.zip
+      - name: Sürümü yayımla
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" cikti/WA-Sohbet-Sil-Buton-Gizleyici.zip --title "WA Sohbet Sil Buton Gizleyici ${GITHUB_REF_NAME#v}" --generate-notes --latest
