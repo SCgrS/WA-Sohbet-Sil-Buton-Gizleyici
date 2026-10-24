@@ -17,9 +17,18 @@ const YESIL = '#1f9d55';
 const KIRMIZI = '#e5484d';
 const bekle = ms => new Promise(r => setTimeout(r, ms));
 
+// Seçici sayfada çalışan kodun metnine yazılmaz, işleve değer olarak verilir.
 async function goruntu(g, secici) {
-  const kutu = await degerlendir(g, `(() => { const r = document.querySelector(${JSON.stringify(secici)}).getBoundingClientRect();
-    return { x: r.left, y: r.top, width: r.width, height: r.height, scale: 1 }; })()`);
+  const { result: belge } = await g('Runtime.evaluate', { expression: 'document' });
+  const yanit = await g('Runtime.callFunctionOn', {
+    objectId: belge.objectId,
+    functionDeclaration: `function (secici) { const r = this.querySelector(secici).getBoundingClientRect();
+      return { x: r.left, y: r.top, width: r.width, height: r.height, scale: 1 }; }`,
+    arguments: [{ value: secici }],
+    returnByValue: true
+  });
+  if (yanit.exceptionDetails) throw new Error(`${secici}: ` + (yanit.exceptionDetails.exception?.description || yanit.exceptionDetails.text));
+  const kutu = yanit.result.value;
   const { data } = await g('Page.captureScreenshot', { format: 'png', clip: kutu, captureBeyondViewport: true });
   return Buffer.from(data, 'base64');
 }
