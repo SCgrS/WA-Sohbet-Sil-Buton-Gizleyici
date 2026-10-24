@@ -77,6 +77,11 @@ Eklenti hiçbir veri tutmamak için herhangi bir anahtara (anahtarın açık kap
 değildir, kurulunca hep çalışır. Eklentiyi geçici olarak kapatırsanız ya da yeniden açarsanız WhatsApp sekmesini
 yenileyin. Yenileyene dek sekmede eski hâli sürer.
 
+## Otomatik denetimler
+
+[![CodeQL Advanced](https://github.com/SCgrS/WA-Sohbet-Sil-Buton-Gizleyici/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/SCgrS/WA-Sohbet-Sil-Buton-Gizleyici/actions/workflows/codeql.yml)\
+[![Dependency Review](https://github.com/SCgrS/WA-Sohbet-Sil-Buton-Gizleyici/actions/workflows/dependency-review.yml/badge.svg?branch=main)](https://github.com/SCgrS/WA-Sohbet-Sil-Buton-Gizleyici/actions/workflows/dependency-review.yml)
+
 ---
 
 Soru ve geri bildirimler için: [x.com/CgrShn](https://x.com/CgrShn)
