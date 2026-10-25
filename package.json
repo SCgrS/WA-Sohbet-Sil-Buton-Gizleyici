@@ -2,6 +2,7 @@
   "name": "wa-sohbet-sil-buton-gizleyici",
   "version": "0.1.0",
   "private": true,
+  "license": "AGPL-3.0-only",
   "description": "WhatsApp Web'de sohbet alanında sağ tıkla açılan menüdeki “Sohbeti sil” ve “Sohbeti temizle” seçeneklerini gizleyen Chrome eklentisi (geliştirme araçları).",
   "type": "module",
   "scripts": {

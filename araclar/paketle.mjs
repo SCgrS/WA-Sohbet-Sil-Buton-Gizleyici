@@ -10,7 +10,8 @@ import { fileURLToPath } from 'node:url';
 export const KOK = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const PAKET_ADI = 'WA-Sohbet-Sil-Buton-Gizleyici.zip';
 // Eklentiye ait kök öğeler (klasörler bütünüyle). Köke yeni bir eklenti dosyası eklenince buraya da eklenir; test denetler.
-export const EKLENTI_OGELERI = ['manifest.json', 'icerik.css', 'simgeler'];
+// LICENSE da girer: AGPL-3.0 lisans metninin eklentiyle birlikte verilmesini istiyor.
+export const EKLENTI_OGELERI = ['manifest.json', 'icerik.css', 'simgeler', 'LICENSE'];
 
 const CRC = (() => {
   const t = new Int32Array(256);

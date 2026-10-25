@@ -86,4 +86,4 @@ yenileyin. Yenileyene dek sekmede eski hâli sürer.
 
 Soru ve geri bildirimler için: [x.com/CgrShn](https://x.com/CgrShn)
 
-Lisans: MIT. Ayrıntılar için [LICENSE](LICENSE) dosyasına bakınız.
+Lisans: AGPL-3.0. Ayrıntılar için [LICENSE](LICENSE) dosyasına bakınız.

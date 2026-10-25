@@ -33,7 +33,7 @@ test('paket: kökte manifest, eksiksiz dosyalar, araç ve test yok, hiçbir izin
     assert.equal(m.optional_permissions, undefined);
     assert.equal(m.background, undefined);
     assert.equal(m.action, undefined);
-    assert.deepEqual([...g.keys()].sort(), ['icerik.css', 'manifest.json', 'simgeler/128.png', 'simgeler/16.png', 'simgeler/32.png', 'simgeler/48.png']);
+    assert.deepEqual([...g.keys()].sort(), ['LICENSE', 'icerik.css', 'manifest.json', 'simgeler/128.png', 'simgeler/16.png', 'simgeler/32.png', 'simgeler/48.png']);
     assert.equal(m.content_scripts.length, 1);
     assert.deepEqual(m.content_scripts[0].matches, ['https://web.whatsapp.com/*']);
     assert.deepEqual(m.content_scripts[0].css, ['icerik.css']);
