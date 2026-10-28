@@ -32,7 +32,7 @@ export const AD = 'wa-sohbet-sil-buton-gizleyici';
 export const UC_NOKTA_DEGISKENI = `--${AD}-uc-nokta`;
 
 const ACIKLAMA = `/*
- * WA Sohbet Sil Buton Gizleyici: web.whatsapp.com'a eklenen stil kuralları.
+ * WhatsApp Web için Sohbeti Sil Gizleyici: web.whatsapp.com'a eklenen stil kuralları.
  *
  * Bu dosya araclar/stil-uret.mjs ile üretilir. Elle değiştirmeyin: Seçenek listeleri o dosyadadır, listeleri değiştirince
  * "npm run stil" çalıştırın.

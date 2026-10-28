@@ -182,7 +182,7 @@ const LISTE = { kisi: TR.listeKisi, grup: TR.listeGrup, cikilmis: TR.listeCikilm
 test('eklenti yüklenir: beklenen kimlik, izin, uyarı ve hata yok, sayfada eklentiye ait kod çalışmaz', { skip: ATLA }, async () => {
   assert.equal(kimlik, BEKLENEN_KIMLIK);
   const bilgi = await eklentiBilgisi();
-  assert.equal(bilgi.ad, 'WA Sohbet Sil Buton Gizleyici');
+  assert.equal(bilgi.ad, 'WhatsApp Web için Sohbeti Sil Gizleyici');
   assert.equal(bilgi.aciklama, TR_ILETILER.extDescription.message);
   assert.deepEqual(bilgi.uyarilar, []);
   assert.deepEqual(bilgi.manifestHatalari, []);

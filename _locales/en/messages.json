@@ -1,9 +1,9 @@
 {
   "extName": {
-    "message": "WA Delete Chat Button Hider"
+    "message": "Delete Chat Hider for WhatsApp Web"
   },
   "extShortName": {
-    "message": "WA Delete Chat Hider"
+    "message": "Delete Chat Hider"
   },
   "extDescription": {
     "message": "Hides “Delete chat” and “Clear chat” in WhatsApp Web's right-click chat menu (English and Turkish UI). Developer: x.com/CgrShn"

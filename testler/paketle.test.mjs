@@ -55,8 +55,8 @@ test('paket: kökte manifest, eksiksiz dosyalar, araç ve test yok, hiçbir izin
       assert.match(coz(m.description), /x\.com\/CgrShn/);
       assert.ok(coz(m.description).length <= 132, 'Mağaza açıklama sınırı 132 karakter');
     }
-    // Türkçe ad mağazadaki adla aynı kalır.
-    assert.equal(tr.extName.message, 'WA Sohbet Sil Buton Gizleyici');
+    // Mağazadaki ad (0.1.2'den beri, kullanıcı seçti). İngilizcesi Delete Chat Hider for WhatsApp Web.
+    assert.equal(tr.extName.message, 'WhatsApp Web için Sohbeti Sil Gizleyici');
     // Her girdinin CRC'si Node'un kendi hesabıyla aynı (zipOku de denetler).
     if (zlib.crc32) {
       const z = fs.readFileSync(r.hedef);
