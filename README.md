@@ -69,7 +69,7 @@ bölümünde görünür.
 
 ## Kurulum
 
-1. Chrome Web Mağazası'nda **WA Sohbet Sil Buton Gizleyici**'nin sayfasını açın.
+1. Chrome Web Mağazası'nda **[WA Sohbet Sil Buton Gizleyici](https://chromewebstore.google.com/detail/hgpmjganmgkdcelnajgibijnbbmodcjf)**'nin sayfasını açın.
 2. **Chrome'a ekle** düğmesine basın, açılan pencerede **Uzantı ekle**'yi seçin.
 3. Açık bir WhatsApp Web sekmeniz varsa **yenileyin (F5)**. Eklenti, kurulmadan önce açılmış sekmede çalışmaz.
 
