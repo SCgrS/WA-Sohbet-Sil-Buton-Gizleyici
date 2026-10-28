@@ -20,8 +20,8 @@ jobs:
       - run: npm test
       - name: Etiket manifest sürümüyle aynı mı
         run: node -e "const v=require('./manifest.json').version; if ('v'+v !== process.env.GITHUB_REF_NAME) { console.error('manifest '+v+' ile etiket '+process.env.GITHUB_REF_NAME+' tutmuyor'); process.exit(1); }"
-      - run: node araclar/paketle.mjs cikti/WA-Sohbet-Sil-Buton-Gizleyici.zip
+      - run: node araclar/paketle.mjs cikti/WhatsApp-Web-Icin-Sohbeti-Sil-Gizleyici.zip
       - name: Sürümü yayımla
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" cikti/WA-Sohbet-Sil-Buton-Gizleyici.zip --title "WhatsApp Web için Sohbeti Sil Gizleyici ${GITHUB_REF_NAME#v}" --generate-notes --latest
+        run: gh release create "$GITHUB_REF_NAME" cikti/WhatsApp-Web-Icin-Sohbeti-Sil-Gizleyici.zip --title "WhatsApp Web için Sohbeti Sil Gizleyici ${GITHUB_REF_NAME#v}" --generate-notes --latest

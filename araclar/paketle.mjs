@@ -9,7 +9,7 @@ import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 
 export const KOK = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-export const PAKET_ADI = 'WA-Sohbet-Sil-Buton-Gizleyici.zip';
+export const PAKET_ADI = 'WhatsApp-Web-Icin-Sohbeti-Sil-Gizleyici.zip';
 // Eklentiye ait kök öğeler (klasörler bütünüyle). Köke yeni bir eklenti dosyası eklenince buraya da eklenir; test denetler.
 // LICENSE da girer: AGPL-3.0 lisans metninin eklentiyle birlikte verilmesini istiyor. _locales eklentinin adını ve
 // açıklamasını dillere göre verir.
@@ -178,7 +178,7 @@ if (process.argv[1] && process.argv[1].endsWith('paketle.mjs')) {
   const arg = process.argv.slice(2);
   const magaza = arg.includes('--magaza');
   const surum = JSON.parse(fs.readFileSync(path.join(KOK, 'manifest.json'), 'utf8')).version;
-  const varsayilan = magaza ? `WA-Sohbet-Sil-Buton-Gizleyici-${surum}-magaza.zip` : PAKET_ADI;
+  const varsayilan = magaza ? `WhatsApp-Web-Icin-Sohbeti-Sil-Gizleyici-${surum}-magaza.zip` : PAKET_ADI;
   const hedef = path.resolve(arg.find(a => a !== '--magaza') || path.join(KOK, 'cikti', varsayilan));
   const r = paketle(hedef, { magaza });
   console.log(`${path.relative(KOK, r.hedef)} · sürüm ${surum}${magaza ? ' · mağaza (key yok)' : ''} · ${r.dosya} dosya · ${r.bayt} bayt`);

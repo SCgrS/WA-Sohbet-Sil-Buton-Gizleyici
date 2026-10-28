@@ -1,7 +1,7 @@
 # CodeQL güvenlik taraması, gelişmiş kurulum. Sorgu takımı GitHub'ın önceki hazır (varsayılan) kurulumuyla aynı;
 # "actions" bu klasördeki iş akışı dosyalarını da tarar. İki kurulum birlikte çalışmaz; depodaki varsayılan kurulum
 # bu dosya gönderilmeden önce kapatıldı:
-#   gh api -X PATCH repos/SCgrS/WA-Sohbet-Sil-Buton-Gizleyici/code-scanning/default-setup -f state=not-configured
+#   gh api -X PATCH repos/SCgrS/WhatsApp-Web-Icin-Sohbeti-Sil-Gizleyici/code-scanning/default-setup -f state=not-configured
 name: CodeQL Advanced
 
 on:

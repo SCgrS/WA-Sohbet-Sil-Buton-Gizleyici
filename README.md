@@ -82,8 +82,8 @@ bölümünde görünür.
 
 ## Otomatik denetimler
 
-[![CodeQL Advanced](https://github.com/SCgrS/WA-Sohbet-Sil-Buton-Gizleyici/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/SCgrS/WA-Sohbet-Sil-Buton-Gizleyici/actions/workflows/codeql.yml)\
-[![Dependency Review](https://github.com/SCgrS/WA-Sohbet-Sil-Buton-Gizleyici/actions/workflows/dependency-review.yml/badge.svg?branch=main)](https://github.com/SCgrS/WA-Sohbet-Sil-Buton-Gizleyici/actions/workflows/dependency-review.yml)
+[![CodeQL Advanced](https://github.com/SCgrS/WhatsApp-Web-Icin-Sohbeti-Sil-Gizleyici/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/SCgrS/WhatsApp-Web-Icin-Sohbeti-Sil-Gizleyici/actions/workflows/codeql.yml)\
+[![Dependency Review](https://github.com/SCgrS/WhatsApp-Web-Icin-Sohbeti-Sil-Gizleyici/actions/workflows/dependency-review.yml/badge.svg?branch=main)](https://github.com/SCgrS/WhatsApp-Web-Icin-Sohbeti-Sil-Gizleyici/actions/workflows/dependency-review.yml)
 
 ---
 
