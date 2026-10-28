@@ -34,6 +34,9 @@ sohbeti silen ya da temizleyen bir seçenek bulunmaz.
 
 ![Eklentiyle: Solda mesaj menüsü değişmeden “Sil” ile bitiyor. Sağda sohbet menüsü “Engelle” ile bitiyor, “Sohbeti temizle” ve “Sohbeti sil” yok](belgeler/gorseller/cozum.png)
 
+Eklenti, WhatsApp Web Türkçe ya da İngilizce kullanılırken çalışır. WhatsApp başka bir dilde kullanılıyorsa seçenekler
+gizlenmez.
+
 ## Bir sohbeti isteyerek silmek
 
 Eklenti yalnızca sağ tıkla açılan sohbet menüsünde gizler. Bir sohbeti bilerek silmek ya da temizlemek isterseniz iki
