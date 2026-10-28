@@ -3,6 +3,16 @@
 WhatsApp Web sohbet alanında sağ tıkla açılan menüdeki **“Sohbeti sil”** ve **“Sohbeti temizle”** seçeneklerini
 gizleyerek tek bir mesaj silmek isterken tüm konuşmanın silinmesi ihtimali ortadan kaldıran Chrome eklentisi.
 
+## Kurulum
+
+1. Chrome Web Mağazası'nda **[WA Sohbet Sil Buton Gizleyici](https://chromewebstore.google.com/detail/hgpmjganmgkdcelnajgibijnbbmodcjf)**'nin sayfasını açın.
+2. **Chrome'a ekle** düğmesine basın, açılan pencerede **Uzantı ekle**'yi seçin.
+3. Açık bir WhatsApp Web sekmeniz varsa **yenileyin (F5)**. Eklenti, kurulmadan önce açılmış sekmede çalışmaz.
+
+Eklenti hiçbir veri tutmamak için herhangi bir anahtara (anahtarın açık kapalı olduğu verisini dahi tutmamak için) sahip
+değildir, kurulunca hep çalışır. Eklentiyi geçici olarak kapatırsanız ya da yeniden açarsanız WhatsApp sekmesini
+yenileyin. Yenileyene dek sekmede eski hâli sürer.
+
 ## Sorun: “Sil” ile “Sohbeti sil” neredeyse aynı yerde
 
 WhatsApp Web'de çoğunlukla kendi gönderdiğiniz bir mesajı silersiniz. Mesaja sağ tıklarsınız, açılan **mesaj menüsünün**
@@ -66,16 +76,6 @@ bölümünde görünür.
    okuyabilir.
 2. `chrome://extensions` sayfasında eklentinin **Ayrıntılar** düğmesine basın. İzinler bölümünde “Bu uzantı herhangi bir
    özel izin gerektirmiyor” yazar.
-
-## Kurulum
-
-1. Chrome Web Mağazası'nda **[WA Sohbet Sil Buton Gizleyici](https://chromewebstore.google.com/detail/hgpmjganmgkdcelnajgibijnbbmodcjf)**'nin sayfasını açın.
-2. **Chrome'a ekle** düğmesine basın, açılan pencerede **Uzantı ekle**'yi seçin.
-3. Açık bir WhatsApp Web sekmeniz varsa **yenileyin (F5)**. Eklenti, kurulmadan önce açılmış sekmede çalışmaz.
-
-Eklenti hiçbir veri tutmamak için herhangi bir anahtara (anahtarın açık kapalı olduğu verisini dahi tutmamak için) sahip
-değildir, kurulunca hep çalışır. Eklentiyi geçici olarak kapatırsanız ya da yeniden açarsanız WhatsApp sekmesini
-yenileyin. Yenileyene dek sekmede eski hâli sürer.
 
 ## Otomatik denetimler
 
