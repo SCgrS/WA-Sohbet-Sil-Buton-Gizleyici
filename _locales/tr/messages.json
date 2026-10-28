@@ -1,0 +1,11 @@
+{
+  "extName": {
+    "message": "WA Sohbet Sil Buton Gizleyici"
+  },
+  "extShortName": {
+    "message": "WA Sohbet Sil Gizleyici"
+  },
+  "extDescription": {
+    "message": "WhatsApp Web'de sohbet alanında sağ tıkla açılan menüden “Sohbeti sil” ve “Sohbeti temizle”yi gizler. Geliştirici: x.com/CgrShn"
+  }
+}

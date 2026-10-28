@@ -7,10 +7,10 @@ import zlib from 'node:zlib';
 import { KOK, paketle, zipOku, zipYaz, denetle, EKLENTI_OGELERI, eklentiDosyalari } from '../araclar/paketle.mjs';
 import { GIZLENECEK_SECENEKLER, SOHBET_MENUSU_SECENEKLERI, STIL_DOSYASI, stilUret } from '../araclar/stil-uret.mjs';
 
-test('kök düzeni: eklenti dosyaları listede, "_" ile başlayan ad yok', () => {
+test('kök düzeni: eklenti dosyaları listede, _locales dışında "_" ile başlayan ad yok', () => {
   const kok = fs.readdirSync(KOK);
   assert.ok(kok.includes('manifest.json'));
-  assert.deepEqual(kok.filter(a => a.startsWith('_')), []);
+  assert.deepEqual(kok.filter(a => a.startsWith('_') && a !== '_locales'), []);
   // Köke konan her eklenti dosyası (js/html/css) pakette de olmalı.
   const eklentiTuru = kok.filter(a => /\.(js|html|css)$/.test(a));
   assert.deepEqual(eklentiTuru.filter(a => !EKLENTI_OGELERI.includes(a)), [], 'EKLENTI_OGELERI listesine eklenmemiş dosya');
@@ -33,7 +33,7 @@ test('paket: kökte manifest, eksiksiz dosyalar, araç ve test yok, hiçbir izin
     assert.equal(m.optional_permissions, undefined);
     assert.equal(m.background, undefined);
     assert.equal(m.action, undefined);
-    assert.deepEqual([...g.keys()].sort(), ['LICENSE', 'icerik.css', 'manifest.json', 'simgeler/128.png', 'simgeler/16.png', 'simgeler/32.png', 'simgeler/48.png']);
+    assert.deepEqual([...g.keys()].sort(), ['LICENSE', '_locales/en/messages.json', '_locales/tr/messages.json', 'icerik.css', 'manifest.json', 'simgeler/128.png', 'simgeler/16.png', 'simgeler/32.png', 'simgeler/48.png']);
     assert.equal(m.content_scripts.length, 1);
     assert.deepEqual(m.content_scripts[0].matches, ['https://web.whatsapp.com/*']);
     assert.deepEqual(m.content_scripts[0].css, ['icerik.css']);
@@ -42,8 +42,21 @@ test('paket: kökte manifest, eksiksiz dosyalar, araç ve test yok, hiçbir izin
     assert.equal(m.minimum_chrome_version, '111');
     assert.deepEqual(Object.keys(m.icons), ['16', '32', '48', '128']);
     assert.match(m.author, /x\.com\/CgrShn/);
-    assert.match(m.description, /x\.com\/CgrShn/);
-    assert.ok(m.description.length <= 132, 'Mağaza açıklama sınırı 132 karakter');
+    // Ad, kısa ad ve açıklama dil dosyalarından gelir. Varsayılan dil İngilizce: Chrome'u Türkçe ya da İngilizce dışında
+    // bir dilde kullanan İngilizcesini görür.
+    assert.equal(m.default_locale, 'en');
+    const dilDosyalari = [...g.keys()].filter(ad => ad.startsWith('_locales/'));
+    assert.deepEqual(dilDosyalari, ['_locales/en/messages.json', '_locales/tr/messages.json']);
+    const [en, tr] = dilDosyalari.map(ad => JSON.parse(g.get(ad)));
+    assert.deepEqual(Object.keys(tr), Object.keys(en), 'iki dilde aynı iletiler');
+    for (const iletiler of [en, tr]) {
+      const coz = deger => deger.replace(/^__MSG_(\w+)__$/, (_, ad) => iletiler[ad].message);
+      assert.ok(coz(m.name).length <= 75, 'Ad sınırı 75 karakter');
+      assert.match(coz(m.description), /x\.com\/CgrShn/);
+      assert.ok(coz(m.description).length <= 132, 'Mağaza açıklama sınırı 132 karakter');
+    }
+    // Türkçe ad mağazadaki adla aynı kalır.
+    assert.equal(tr.extName.message, 'WA Sohbet Sil Buton Gizleyici');
     // Her girdinin CRC'si Node'un kendi hesabıyla aynı (zipOku de denetler).
     if (zlib.crc32) {
       const z = fs.readFileSync(r.hedef);
@@ -92,10 +105,20 @@ test('paket denetimi eksik dosyayı ve yasak adları yakalar', () => {
   assert.deepEqual(denetle(zipOku(zipYaz([['alt/manifest.json', manifest]]))), ['kökte manifest.json yok']);
   // Kök dışına çıkan yollar reddedilir. Chrome'un kabul ettiği _locales klasörü reddedilmez.
   const tamam = Buffer.from(JSON.stringify({ manifest_version: 3 }));
-  const yollar = denetle(zipOku(zipYaz([['manifest.json', tamam], ['../disari.js', Buffer.from('')], ['/mutlak.js', Buffer.from('')], ['_locales/tr/messages.json', Buffer.from('{}')]]))).join('\n');
+  const yerel = Buffer.from(JSON.stringify({ manifest_version: 3, default_locale: 'tr' }));
+  const yollar = denetle(zipOku(zipYaz([['manifest.json', yerel], ['../disari.js', Buffer.from('')], ['/mutlak.js', Buffer.from('')], ['_locales/tr/messages.json', Buffer.from('{}')]]))).join('\n');
   assert.match(yollar, /kök dışına çıkan yol: \.\.\/disari\.js/);
   assert.match(yollar, /kök dışına çıkan yol: \/mutlak\.js/);
   assert.doesNotMatch(yollar, /_locales/);
+  // Dil dosyaları: default_locale olmadan _locales ya da __MSG_ iletisi olmaz, varsayılan dilde her ileti bulunur.
+  const adli = ek => Buffer.from(JSON.stringify({ manifest_version: 3, name: '__MSG_extName__', ...ek }));
+  const dilDenetimi = (manifest, ...diller) => denetle(zipOku(zipYaz([['manifest.json', manifest], ...diller]))).join('\n');
+  const ileti = Buffer.from('{"extName":{"message":"A"}}');
+  assert.match(dilDenetimi(adli({})), /default_locale yok/);
+  assert.match(dilDenetimi(adli({ default_locale: 'en' })), /varsayılan dil dosyası yok: _locales\/en\/messages\.json/);
+  assert.match(dilDenetimi(adli({ default_locale: 'en' }), ['_locales/en/messages.json', Buffer.from('{}')]), /varsayılan dilde eksik ileti: extName/);
+  assert.match(dilDenetimi(adli({ default_locale: 'en' }), ['_locales/en/messages.json', ileti], ['_locales/tr/messages.json', Buffer.from('{bozuk')]), /okunamayan dil dosyası: _locales\/tr\/messages\.json/);
+  assert.equal(dilDenetimi(adli({ default_locale: 'en' }), ['_locales/en/messages.json', ileti], ['_locales/tr/messages.json', Buffer.from('{}')]), '');
   // Yinelenen ad ve bozuk CRC zip okunurken yakalanır. zipOku merkez dizindeki CRC'ye bakar.
   assert.throws(() => zipOku(zipYaz([['manifest.json', tamam], ['a.js', Buffer.from('1')], ['a.js', Buffer.from('2')]])), /yinelenen ad: a\.js/);
   const bozuk = zipYaz([['manifest.json', tamam]]);

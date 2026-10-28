@@ -1,7 +1,8 @@
 // Kullanıcıya verilecek eklenti zip'ini üretir ve açıp denetler: node araclar/paketle.mjs [--magaza] [çıktı.zip]
 // Kökte manifest.json durur (üst klasör yok). Yalnız eklenti dosyaları (EKLENTI_OGELERI) girer. Manifest'in adını verdiği
-// her dosya (simgeler ve içerik dosyaları) zip'te olmalı. "_" ile başlayan ad, ters bölülü, mutlak ya da ".." içeren yol ve
-// yinelenen ad olmamalı. Aynı kaynaktan bayt bayt aynı zip çıkar (sabit tarih, yerel ayardan bağımsız sıralı dosyalar).
+// her dosya (simgeler ve içerik dosyaları) ve kullandığı her dil iletisi (__MSG_ad__) zip'te olmalı. Kökteki _locales
+// dışında "_" ile başlayan ad, ters bölülü, mutlak ya da ".." içeren yol ve yinelenen ad olmamalı. Aynı kaynaktan bayt bayt
+// aynı zip çıkar (sabit tarih, yerel ayardan bağımsız sıralı dosyalar).
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
@@ -10,8 +11,9 @@ import { fileURLToPath } from 'node:url';
 export const KOK = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const PAKET_ADI = 'WA-Sohbet-Sil-Buton-Gizleyici.zip';
 // Eklentiye ait kök öğeler (klasörler bütünüyle). Köke yeni bir eklenti dosyası eklenince buraya da eklenir; test denetler.
-// LICENSE da girer: AGPL-3.0 lisans metninin eklentiyle birlikte verilmesini istiyor.
-export const EKLENTI_OGELERI = ['manifest.json', 'icerik.css', 'simgeler', 'LICENSE'];
+// LICENSE da girer: AGPL-3.0 lisans metninin eklentiyle birlikte verilmesini istiyor. _locales eklentinin adını ve
+// açıklamasını dillere göre verir.
+export const EKLENTI_OGELERI = ['manifest.json', 'icerik.css', 'simgeler', '_locales', 'LICENSE'];
 
 const CRC = (() => {
   const t = new Int32Array(256);
@@ -136,6 +138,22 @@ export function denetle(girdiler) {
     ...(m.content_scripts || []).flatMap(c => [...(c.js || []), ...(c.css || [])])
   ].map(ad => path.posix.normalize(ad)));
   for (const ad of gerekli) if (!var_(ad)) sorunlar.push(`eksik dosya: ${ad}`);
+  // Dil dosyaları: Chrome, _locales ya da __MSG_ iletisi varsa default_locale ister. Varsayılan dilin dosyasında manifest'in
+  // kullandığı her ileti bulunmalı, öbür dillerde eksik ileti varsayılandan alınır.
+  const diller = [...new Set([...girdiler.keys()].filter(ad => ad.startsWith('_locales/')).map(ad => ad.split('/')[1]))];
+  const iletiAdlari = [...JSON.stringify(m).matchAll(/__MSG_(\w+)__/g)].map(e => e[1]);
+  if ((diller.length || iletiAdlari.length) && !m.default_locale) sorunlar.push('default_locale yok');
+  else if (m.default_locale && !diller.includes(m.default_locale)) sorunlar.push(`varsayılan dil dosyası yok: _locales/${m.default_locale}/messages.json`);
+  for (const dil of diller) {
+    let iletiler;
+    try {
+      iletiler = JSON.parse(girdiler.get(`_locales/${dil}/messages.json`).toString('utf8'));
+    } catch {
+      sorunlar.push(`okunamayan dil dosyası: _locales/${dil}/messages.json`);
+      continue;
+    }
+    if (dil === m.default_locale) for (const ad of iletiAdlari) if (!iletiler[ad]?.message) sorunlar.push(`varsayılan dilde eksik ileti: ${ad}`);
+  }
   return sorunlar;
 }
 

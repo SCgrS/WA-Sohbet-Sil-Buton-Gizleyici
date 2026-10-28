@@ -12,7 +12,9 @@ import { KOK, eklentiyiKopyala } from '../araclar/paketle.mjs';
 
 const BEKLENEN_KIMLIK = 'fidmonnmoifajebnnahmghaipgfhjifa'; // manifest'teki key'den türer
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(KOK, 'manifest.json'), 'utf8'));
-const EKLENTI_ADI = MANIFEST.name;
+// Ad dil dosyasından gelir. Sınama Chrome'u Türkçe açılır (araclar/cdp.mjs), eklentinin Türkçe adını görür.
+const TR_ILETILER = JSON.parse(fs.readFileSync(path.join(KOK, '_locales', 'tr', 'messages.json'), 'utf8'));
+const EKLENTI_ADI = MANIFEST.name.replace(/^__MSG_(\w+)__$/, (_, ad) => TR_ILETILER[ad].message);
 const SAHTE_SAYFA = fs.readFileSync(path.join(KOK, 'testler', 'sahte-whatsapp.html'));
 const BASKA_SAYFA = Buffer.from('<!doctype html><html><body><div id="app"></div></body></html>');
 const WHATSAPP = 'https://web.whatsapp.com/';
@@ -135,12 +137,13 @@ async function menuAc(yol, { sonraBekle = 20 } = {}) {
 
 const gizliSayisi = () => degerlendir(sayfa.g, "[...document.querySelectorAll('#katman [role=menuitem]')].filter(b => !b.checkVisibility()).length");
 
-// chrome://extensions'ın gösterdiği bilgiler: kurulum uyarıları, manifest ve çalışma hataları, izinler, site erişimi.
+// chrome://extensions'ın gösterdiği bilgiler: ad, açıklama, kurulum uyarıları, manifest ve çalışma hataları, izinler, site
+// erişimi.
 async function eklentiBilgisi() {
   const yonetim = await sekmeAc(c, 'chrome://extensions/');
   await ifadeBekle(yonetim.g, "document.readyState === 'complete' && !!(window.chrome && chrome.developerPrivate)");
   const bilgi = await degerlendir(yonetim.g, `chrome.developerPrivate.getExtensionInfo(${JSON.stringify(kimlik)}).then(b => ({
-    uyarilar: b.installWarnings, manifestHatalari: b.manifestErrors.map(h => h.message), calismaHatalari: b.runtimeErrors.map(h => h.message),
+    ad: b.name, aciklama: b.description, uyarilar: b.installWarnings, manifestHatalari: b.manifestErrors.map(h => h.message), calismaHatalari: b.runtimeErrors.map(h => h.message),
     izinler: b.permissions.simplePermissions.map(p => p.message), siteErisimi: b.permissions.runtimeHostPermissions
   }))`);
   await c.gonder('Target.closeTarget', { targetId: yonetim.targetId });
@@ -179,6 +182,8 @@ const LISTE = { kisi: TR.listeKisi, grup: TR.listeGrup, cikilmis: TR.listeCikilm
 test('eklenti yüklenir: beklenen kimlik, izin, uyarı ve hata yok, sayfada eklentiye ait kod çalışmaz', { skip: ATLA }, async () => {
   assert.equal(kimlik, BEKLENEN_KIMLIK);
   const bilgi = await eklentiBilgisi();
+  assert.equal(bilgi.ad, 'WA Sohbet Sil Buton Gizleyici');
+  assert.equal(bilgi.aciklama, TR_ILETILER.extDescription.message);
   assert.deepEqual(bilgi.uyarilar, []);
   assert.deepEqual(bilgi.manifestHatalari, []);
   assert.deepEqual(bilgi.calismaHatalari, []);
