@@ -31,8 +31,10 @@ export async function chromeBaslat({ ekler = [] } = {}) {
     ...(process.platform === 'linux' && process.env.CI ? ['--no-sandbox'] : []),
     ...ekler, 'about:blank'
   ];
-  // Chrome'un stderr'i okunmaz, bu yüzden boruya bağlanmaz (dolan boru Chrome'u durdurabilir).
-  const surec = spawn(yol, argumanlar, { stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'] });
+  // Chrome'un stderr'i okunmaz, bu yüzden boruya bağlanmaz (dolan boru Chrome'u durdurabilir). Arayüz dili Windows'ta
+  // --lang ile, Linux'ta LANGUAGE ortam değişkeniyle Türkçe olur (Linux'ta Chrome --lang'i yok sayar). Eklentinin adı
+  // ve açıklaması bu dile göre seçilir.
+  const surec = spawn(yol, argumanlar, { stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'], env: { ...process.env, LANGUAGE: 'tr' } });
   const yaz = surec.stdio[3];
   const oku = surec.stdio[4];
   const cozucu = new StringDecoder('utf8');
