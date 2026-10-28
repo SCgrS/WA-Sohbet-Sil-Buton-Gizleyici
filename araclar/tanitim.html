@@ -8,7 +8,8 @@
   Menüler gerçek sayfada ölçülen yapıyla ve seçenek sıralarıyla kurulur (div[role=menu] > … > button[role=menuitem]
   [aria-label], 1 px ayırıcı); eklentinin kendisi bu sayfada çalışır, gizlemeyi gerçek eklenti yapar. Simgeler
   WhatsApp'ınkiler değil, basit çizimlerdir. Sağ tıkla açılan menü, gerçek WhatsApp Web'deki gibi farenin olduğu yerden
-  aşağı açılır.
+  aşağı açılır. Adresin sonuna ?dil=en eklenirse sayfa İngilizce WhatsApp arayüzüyle açılır (mağazanın İngilizce
+  görselleri için). İngilizce seçenek adları testler/sahte-whatsapp.html'dekilerle aynıdır.
 -->
 <style>
   /* Renkler WhatsApp Web'in yeni koyu temasına yakın (2026-10'daki görünüm): nötr gri zemin. */
@@ -72,33 +73,57 @@ const SIMGE = {
   yildiz: S('<path d="m12 4 2.4 5 5.4.6-4 3.7 1.1 5.4L12 16l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z"/>'),
   duzenle: S('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>')
 };
-const MENULER = {
-  // Sıralar gerçek sayfada (2026-10-19) ölçüldü; mesaj menüsü kendi gönderdiğimiz yazılı bir mesajınki.
-  mesaj: [['Mesaj bilgisi', 'bilgi'], ['Cevapla', 'cevapla'], ['Kopyala', 'kopyala'], ['İfade bırak', 'ifade'], ['İlet', 'ilet'], ['Sabitle', 'sabitle'],
-    ["Meta AI'a soru sorun", 'ai'], ['Yıldız ekle', 'yildiz'], ['Düzenle', 'duzenle'], '|', ['Sil', 'sil']],
-  sohbetKisi: [['Kişi bilgisi', 'bilgi'], ['Ara', 'ara'], ['Mesaj seç', 'sec'], ['Bildirimleri sessize al', 'sessiz'],
-    ['Süreli mesajlar', 'sure'], ["Favoriler'e ekle", 'favori'], ['Listeye ekle', 'liste'], ['Sohbeti kapat', 'kapat'], '|',
-    ['Arama bağlantısı gönder', 'baglanti'], ['Yeni grup araması', 'grupArama'], '|',
-    ['Şikayet et', 'sikayet'], ['Engelle', 'engelle'], ['Sohbeti temizle', 'temizle'], ['Sohbeti sil', 'sil']]
-};
-const KISI = { ad: 'Ayşe Demir', alt: 'çevrimiçi', avatar: 'A' };
+const DIL = new URLSearchParams(location.search).get('dil') === 'en' ? 'en' : 'tr';
+document.documentElement.lang = DIL;
+const METIN = {
+  tr: {
+    menuler: {
+      // Sıralar gerçek sayfada (2026-10-19) ölçüldü; mesaj menüsü kendi gönderdiğimiz yazılı bir mesajınki.
+      mesaj: [['Mesaj bilgisi', 'bilgi'], ['Cevapla', 'cevapla'], ['Kopyala', 'kopyala'], ['İfade bırak', 'ifade'], ['İlet', 'ilet'], ['Sabitle', 'sabitle'],
+        ["Meta AI'a soru sorun", 'ai'], ['Yıldız ekle', 'yildiz'], ['Düzenle', 'duzenle'], '|', ['Sil', 'sil']],
+      sohbetKisi: [['Kişi bilgisi', 'bilgi'], ['Ara', 'ara'], ['Mesaj seç', 'sec'], ['Bildirimleri sessize al', 'sessiz'],
+        ['Süreli mesajlar', 'sure'], ["Favoriler'e ekle", 'favori'], ['Listeye ekle', 'liste'], ['Sohbeti kapat', 'kapat'], '|',
+        ['Arama bağlantısı gönder', 'baglanti'], ['Yeni grup araması', 'grupArama'], '|',
+        ['Şikayet et', 'sikayet'], ['Engelle', 'engelle'], ['Sohbeti temizle', 'temizle'], ['Sohbeti sil', 'sil']]
+    },
+    kisi: { ad: 'Ayşe Demir', alt: 'çevrimiçi', avatar: 'A' },
+    ara: 'Ara', menu: 'Menü', yazin: 'Bir mesaj yazın', bugun: 'Bugün',
+    mesajlar: ['Günaydın, dosyayı inceleyebildin mi?', 'İnceledim, birkaç notum var. Öğleden sonra konuşalım mı?', 'Olur, 14.00 uygun.', 'Tamam, görüşürüz.']
+  },
+  en: {
+    menuler: {
+      mesaj: [['Message info', 'bilgi'], ['Reply', 'cevapla'], ['Copy', 'kopyala'], ['React', 'ifade'], ['Forward', 'ilet'], ['Pin', 'sabitle'],
+        ['Ask Meta AI', 'ai'], ['Star', 'yildiz'], ['Edit', 'duzenle'], '|', ['Delete', 'sil']],
+      sohbetKisi: [['Contact info', 'bilgi'], ['Search', 'ara'], ['Select messages', 'sec'], ['Mute notifications', 'sessiz'],
+        ['Disappearing messages', 'sure'], ['Add to favourites', 'favori'], ['Add to list', 'liste'], ['Close chat', 'kapat'], '|',
+        ['Send call link', 'baglanti'], ['New group call', 'grupArama'], '|',
+        ['Report', 'sikayet'], ['Block', 'engelle'], ['Clear chat', 'temizle'], ['Delete chat', 'sil']]
+    },
+    kisi: { ad: 'Emma Clark', alt: 'online', avatar: 'E' },
+    ara: 'Search', menu: 'Menu', yazin: 'Type a message', bugun: 'Today',
+    mesajlar: ['Good morning, did you see the file?', 'I did, I have a few notes. Shall we talk this afternoon?', 'Sure, 2 pm works.', 'Great, talk then.']
+  }
+}[DIL];
+const MENULER = METIN.menuler;
+const KISI = METIN.kisi;
 const app = document.getElementById('app');
 const katman = () => document.getElementById('katman');
 
 function sohbetCiz(kim, mesajlar, ustten) {
   app.innerHTML = `<div id="main"><header><div class="avatar">${kim.avatar}</div><div class="ad"><b>${kim.ad}</b><small>${kim.alt}</small></div>
-    <button class="dugme" aria-label="Ara">${SIMGE.ara}</button>
-    <button class="dugme" id="menu-dugmesi" aria-label="Menü" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button></header>
-    <div class="mesajlar${ustten ? ' ustten' : ''}">${mesajlar}</div><footer><div>Bir mesaj yazın</div></footer></div><div id="katman"></div>`;
+    <button class="dugme" aria-label="${METIN.ara}">${SIMGE.ara}</button>
+    <button class="dugme" id="menu-dugmesi" aria-label="${METIN.menu}" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button></header>
+    <div class="mesajlar${ustten ? ' ustten' : ''}">${mesajlar}</div><footer><div>${METIN.yazin}</div></footer></div><div id="katman"></div>`;
 }
 
 window.tanitim = {
   kisiSohbeti() {
-    sohbetCiz(KISI, `<div class="tarih">Bugün</div>
-      <div class="balon gelen">Günaydın, dosyayı inceleyebildin mi?<small>09:12</small></div>
-      <div class="balon giden" id="hedef-mesaj">İnceledim, birkaç notum var. Öğleden sonra konuşalım mı?<small>09:15</small></div>
-      <div class="balon gelen">Olur, 14.00 uygun.<small>09:16</small></div>
-      <div class="balon giden">Tamam, görüşürüz.<small>09:17</small></div>`, true);
+    const m = METIN.mesajlar;
+    sohbetCiz(KISI, `<div class="tarih">${METIN.bugun}</div>
+      <div class="balon gelen">${m[0]}<small>09:12</small></div>
+      <div class="balon giden" id="hedef-mesaj">${m[1]}<small>09:15</small></div>
+      <div class="balon gelen">${m[2]}<small>09:16</small></div>
+      <div class="balon giden">${m[3]}<small>09:17</small></div>`, true);
   },
   // Öğenin #app içindeki kutusu.
   kutu(secici) {

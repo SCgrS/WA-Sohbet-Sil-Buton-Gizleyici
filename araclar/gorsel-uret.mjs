@@ -4,13 +4,24 @@
 // Eklenti görünmez Chrome'a yüklenir. araclar/tanitim.html sayfası eklentili görünüm için https://web.whatsapp.com/,
 // eklentisiz görünüm için https://example.com/ adresinde sunulur (eklenti yalnızca WhatsApp adresinde çalışır). Gerçek
 // siteye gidilmez, ad çözümlemesi kapalıdır. Gizlemeyi eklentinin kendisi yapar. Görsellerde gerçek ad ya da mesaj yoktur.
+// İngilizce WhatsApp arayüzüyle aynı görseller: node araclar/gorsel-uret.mjs --dil en <çıktı klasörü>
+// (mağazanın İngilizce sayfası için, README görsellerine dokunmaz).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { chromeBaslat, sekmeAc, ifadeBekle, degerlendir } from './cdp.mjs';
 import { KOK, eklentiyiKopyala } from './paketle.mjs';
 
-const CIKTI = path.join(KOK, 'belgeler', 'gorseller');
+const ARGUMANLAR = process.argv.slice(2);
+const DIL = ARGUMANLAR[0] === '--dil' ? ARGUMANLAR[1] : 'tr';
+if (!['tr', 'en'].includes(DIL)) throw new Error(`bilinmeyen dil: ${DIL}`);
+if (DIL !== 'tr' && !ARGUMANLAR[2]) throw new Error('kullanım: node araclar/gorsel-uret.mjs --dil en <çıktı klasörü>');
+const CIKTI = DIL === 'tr' ? path.join(KOK, 'belgeler', 'gorseller') : path.resolve(ARGUMANLAR[2]);
+// Seçenek adları araclar/tanitim.html'deki menülerle aynı.
+const ETIKET = {
+  tr: { sil: 'Sil', temizle: 'Sohbeti temizle', sohbetiSil: 'Sohbeti sil' },
+  en: { sil: 'Delete', temizle: 'Clear chat', sohbetiSil: 'Delete chat' }
+}[DIL];
 const TANITIM = fs.readFileSync(path.join(KOK, 'araclar', 'tanitim.html'));
 const OLCEK = 2;
 const YESIL = '#1f9d55';
@@ -39,10 +50,10 @@ async function goruntu(g, secici) {
 const SAHNELER = {
   mesajaSagTik: { kur: `(() => { const t = tanitim; t.kisiSohbeti(); const b = t.kutu('#hedef-mesaj');
       const x = b.x - 16, y = b.y + b.h * 0.5; t.menuAc('mesaj', x, y); t.imlec(x, y); return true; })()`,
-    isaret: [[['Sil'], YESIL]] },
+    isaret: [[[ETIKET.sil], YESIL]] },
   yaninaSagTik: { kur: `(() => { const t = tanitim; t.kisiSohbeti(); const b = t.kutu('#hedef-mesaj');
       const x = b.x - 70, y = b.y + b.h * 0.5; t.menuAc('sohbetKisi', x, y); t.imlec(x, y); return true; })()`,
-    isaret: [[['Sohbeti temizle', 'Sohbeti sil'], KIRMIZI]] }
+    isaret: [[[ETIKET.temizle, ETIKET.sohbetiSil], KIRMIZI]] }
 };
 
 async function birlestir(c, hucreler, sutun) {
@@ -85,7 +96,7 @@ async function uret() {
     await s.g('Emulation.setDefaultBackgroundColorOverride', { color: { r: 0, g: 0, b: 0, a: 0 } });
 
     const sahne = async (ad, eklentili) => {
-      await s.g('Page.navigate', { url: eklentili ? 'https://web.whatsapp.com/' : 'https://example.com/' });
+      await s.g('Page.navigate', { url: (eklentili ? 'https://web.whatsapp.com/' : 'https://example.com/') + (DIL === 'tr' ? '' : `?dil=${DIL}`) });
       await s.g('Page.bringToFront');
       await ifadeBekle(s.g, "document.readyState === 'complete' && typeof window.tanitim === 'object'");
       await bekle(150);
@@ -100,7 +111,7 @@ async function uret() {
           if (!await degerlendir(s.g, `tanitim.isaretle(${JSON.stringify(etiketler)}, ${JSON.stringify(renk)})`)) throw new Error(`${ad}: işaretlenecek seçenek yok`);
         }
       } else if (ad === 'mesajaSagTik') {
-        await degerlendir(s.g, `tanitim.isaretle(['Sil'], ${JSON.stringify(YESIL)})`);
+        await degerlendir(s.g, `tanitim.isaretle(${JSON.stringify([ETIKET.sil])}, ${JSON.stringify(YESIL)})`);
       }
       return goruntu(s.g, '#app');
     };
@@ -109,16 +120,26 @@ async function uret() {
     const kirmizi = t => `<b style="color:${KIRMIZI}">${t}</b>`;
     const yaz = (ad, hucreler, sutun) => birlestir(c, hucreler, sutun).then(png => {
       fs.writeFileSync(path.join(CIKTI, ad), png);
-      console.log(`belgeler/gorseller/${ad}`);
+      console.log(path.relative(KOK, path.join(CIKTI, ad)));
     });
+    const YAZILAR = {
+      tr: [`Mesajınıza sağ tık: Mesaj menüsü,<br>en altta ${yesil('“Sil”')} yalnızca bu mesajı siler`,
+        `Fare biraz kayınca: Sohbet menüsü,<br>en altta ${kirmizi('“Sohbeti sil”')} bütün sohbeti siler`,
+        `Eklenti açık, mesajınıza sağ tık:<br>${yesil('“Sil”')} yerinde`,
+        'Eklenti açık, fare biraz kayınca:<br>Sohbeti silen ve temizleyen seçenek yok'],
+      en: [`Right-click your message: Message menu,<br>${yesil('“Delete”')} at the bottom deletes only this message`,
+        `The mouse slips a little: Chat menu,<br>${kirmizi('“Delete chat”')} at the bottom deletes the whole chat`,
+        `Extension on, right-click your message:<br>${yesil('“Delete”')} is still there`,
+        'Extension on, the mouse slips a little:<br>No option that deletes or clears the chat']
+    }[DIL];
 
     await yaz('sorun.png', [
-      { resim: await sahne('mesajaSagTik', false), yazi: `Mesajınıza sağ tık: Mesaj menüsü,<br>en altta ${yesil('“Sil”')} yalnızca bu mesajı siler` },
-      { resim: await sahne('yaninaSagTik', false), yazi: `Fare biraz kayınca: Sohbet menüsü,<br>en altta ${kirmizi('“Sohbeti sil”')} bütün sohbeti siler` }
+      { resim: await sahne('mesajaSagTik', false), yazi: YAZILAR[0] },
+      { resim: await sahne('yaninaSagTik', false), yazi: YAZILAR[1] }
     ], 2);
     await yaz('cozum.png', [
-      { resim: await sahne('mesajaSagTik', true), yazi: `Eklenti açık, mesajınıza sağ tık:<br>${yesil('“Sil”')} yerinde` },
-      { resim: await sahne('yaninaSagTik', true), yazi: `Eklenti açık, fare biraz kayınca:<br>Sohbeti silen ve temizleyen seçenek yok` }
+      { resim: await sahne('mesajaSagTik', true), yazi: YAZILAR[2] },
+      { resim: await sahne('yaninaSagTik', true), yazi: YAZILAR[3] }
     ], 2);
   } finally {
     c.kapat();
