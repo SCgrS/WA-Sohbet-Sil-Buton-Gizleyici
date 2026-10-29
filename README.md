@@ -1,5 +1,7 @@
 # WhatsApp Web için Sohbeti Sil Gizleyici
 
+### [⬇ Chrome Web Mağazası'ndan ekle](https://chromewebstore.google.com/detail/hgpmjganmgkdcelnajgibijnbbmodcjf)
+
 WhatsApp Web sohbet alanında sağ tıkla açılan menüdeki **“Sohbeti sil”** ve **“Sohbeti temizle”** seçeneklerini
 gizleyerek tek bir mesaj silmek isterken tüm konuşmanın silinmesi ihtimali ortadan kaldıran Chrome eklentisi.
 
@@ -13,7 +15,9 @@ Eklenti hiçbir veri tutmamak için herhangi bir anahtara (anahtarın açık kap
 değildir, kurulunca hep çalışır. Eklentiyi geçici olarak kapatırsanız ya da yeniden açarsanız WhatsApp sekmesini
 yenileyin. Yenileyene dek sekmede eski hâli sürer.
 
-## Sorun: “Sil” ile “Sohbeti sil” neredeyse aynı yerde
+## Ne yapar
+
+### Sorun: “Sil” ile “Sohbeti sil” neredeyse aynı yerde
 
 WhatsApp Web'de çoğunlukla kendi gönderdiğiniz bir mesajı silersiniz. Mesaja sağ tıklarsınız, açılan **mesaj menüsünün**
 en altında **“Sil”** vardır ve yalnızca o mesajı siler (soldaki görsel).
@@ -24,20 +28,24 @@ birbirine çok benzer ve ikisinin de en altında çöp kutusu simgeli bir silme 
 sohbet menüsünde **“Sohbeti sil”** (hemen üstünde de **“Sohbeti temizle”**). Alışkanlıkla en alttaki seçeneğe tıklayan
 kişi tek bir mesaj yerine bütün sohbeti silebilir.
 
-![Solda mesajınıza sağ tıkla açılan mesaj menüsü, en altta “Sil”. Sağda fare biraz kayınca sağ tıkla açılan sohbet menüsü, en altta “Sohbeti temizle” ve “Sohbeti sil”](belgeler/gorseller/sorun.png)
+<p align="center">
+  <img src="belgeler/gorseller/sorun.png" width="90%" alt="Solda mesajınıza sağ tıkla açılan mesaj menüsü, en altta “Sil”. Sağda fare biraz kayınca sağ tıkla açılan sohbet menüsü, en altta “Sohbeti temizle” ve “Sohbeti sil”">
+</p>
 
-## Eklentiyle
+### Eklentiyle
 
 Eklenti, sohbet alanında sağ tıkla açılan sohbet menüsündeki “Sohbeti temizle” ile “Sohbeti sil”i gizler. Mesaj menüsü
 olduğu gibi kalır. Mesajın üstüne sağ tıklayınca “Sil” yine en altta durur. Yanlışlıkla sohbet menüsü açılırsa altta
 sohbeti silen ya da temizleyen bir seçenek bulunmaz.
 
-![Eklentiyle: Solda mesaj menüsü değişmeden “Sil” ile bitiyor. Sağda sohbet menüsü “Engelle” ile bitiyor, “Sohbeti temizle” ve “Sohbeti sil” yok](belgeler/gorseller/cozum.png)
+<p align="center">
+  <img src="belgeler/gorseller/cozum.png" width="90%" alt="Eklentiyle: Solda mesaj menüsü değişmeden “Sil” ile bitiyor. Sağda sohbet menüsü “Engelle” ile bitiyor, “Sohbeti temizle” ve “Sohbeti sil” yok">
+</p>
 
 Eklenti, WhatsApp Web Türkçe ya da İngilizce kullanılırken çalışır. WhatsApp başka bir dilde kullanılıyorsa seçenekler
 gizlenmez.
 
-## Bir sohbeti isteyerek silmek
+### Bir sohbeti isteyerek silmek
 
 Eklenti yalnızca sağ tıkla açılan sohbet menüsünde gizler. Bir sohbeti bilerek silmek ya da temizlemek isterseniz iki
 yol olduğu gibi durur:
@@ -79,6 +87,10 @@ bölümünde görünür.
    okuyabilir.
 2. `chrome://extensions` sayfasında eklentinin **Ayrıntılar** düğmesine basın. İzinler bölümünde “Bu uzantı herhangi bir
    özel izin gerektirmiyor” yazar.
+
+## Üçüncü taraf bileşenler
+
+Eklenti hiçbir üçüncü taraf pakete bağlı değildir.
 
 ## Otomatik denetimler
 
